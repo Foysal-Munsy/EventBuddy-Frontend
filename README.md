@@ -55,6 +55,7 @@ Use the seeded admin account to access `/admin`:
 | `npm run lint`   | Run ESLint using the Next.js config. |
 | `npm run build`  | Create an optimized production build. |
 | `npm run start`  | Serve the production build (after `npm run build`). |
+| `npm run dev`     | Launch the development server (preferred during feature work). |
 
 
 
@@ -91,6 +92,47 @@ Use the seeded admin account to access `/admin`:
 ### Event Details
 ![Event Details](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/event-detailss.png)
 
+## Dependencies
+
+| Package | Purpose |
+| ------- | ------- |
+| `next@16` | App router framework, routing, server components. |
+| `react@19` / `react-dom@19` | UI rendering. |
+| `tailwindcss@4` + `@tailwindcss/postcss` | Styling utilities. |
+| `dotenv` | Load environment variables for server components. |
+| `react-icons` | Icons across cards, dashboards, and actions. |
+| `sweetalert2` | Booking confirmations, auth prompts, CRUD alerts. |
+| `eslint` / `eslint-config-next` | Linting rules for consistency. |
+| `typescript` | Static typing across the project. |
+
+## Folder Structure
+
+```
+eventbuddy-frontend/
+├── app/
+│   ├── admin/                # Admin dashboard route
+│   ├── dashboard/            # User dashboard route
+│   ├── events/[id]/          # Event details dynamic route
+│   ├── components/           # Shared UI components
+│   │   ├── layout/           # Navbar, footer, menus
+│   │   └── dashboard/        # Admin & user dashboard widgets
+│   ├── register/ signin/ signup/
+│   └── page.tsx              # Landing page
+├── public/                   # Static assets
+├── README.md
+├── package.json
+├── tsconfig.json
+└── ...other config files
+```
+
+## Project Flow
+
+1. **Landing Page:** Fetches upcoming/previous events from `GET /events/*` endpoints and offers entry points to registration/login.
+2. **Authentication:** Credentials saved to `localStorage` + cookies. Guards (`AdminGate`, `UserGate`) enforce access for `/admin` and `/dashboard`.
+3. **Admin Workflow:** Admins create, edit, delete events via modal components and `EventManagementTable`, hitting `POST/PUT/DELETE /events` endpoints.
+4. **User Experience:** Users browse event cards → open event details → select seats → book via `POST /events/:id/book`. SweetAlert handles confirmations/errors.
+5. **My Bookings:** `/dashboard` uses `GET /events/my-bookings` to list confirmed reservations with options to refresh/extend future cancellation logic.
+
 ## Deployment Checklist
 
 1. Run `npm run lint` and ensure there are no warnings/errors.
@@ -98,12 +140,3 @@ Use the seeded admin account to access `/admin`:
 3. Provision the necessary environment variables (e.g., `BASE_URL`) on your hosting platform.
 4. Confirm the backend endpoint is reachable from the deployed frontend.
 
-## Contributing
-
-1. Fork & create a feature branch.
-2. Implement changes with tests/linters passing.
-3. Open a pull request describing your updates.
-
-## License
-
-This project inherits the license defined in the repository (add/adjust LICENSE file as needed).
