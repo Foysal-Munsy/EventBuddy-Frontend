@@ -3,7 +3,18 @@
 
 Interactive Next.js 16 application for discovering events, managing admin listings, and booking seats with real-time availability driven by the EventBuddy backend API.
 
-</div>
+## Backend Reference
+
+- **API Repo:** [EventBuddy Backend](https://github.com/Foysal-Munsy/EventBuddy-Backend)
+- Start the backend before running the frontend or booking requests will fail. The frontend expects the backend at `http://localhost:8000` by default (adjust `BASE_URL` if different).
+
+## Admin Credentials
+
+Use the seeded admin account to access `/admin`:
+
+- **Email:** `eventbuddy.admin@gmail.com`
+- **Password:** `admin123`
+
 
 ## Tech Stack
 
@@ -45,19 +56,7 @@ Interactive Next.js 16 application for discovering events, managing admin listin
 | `npm run build`  | Create an optimized production build. |
 | `npm run start`  | Serve the production build (after `npm run build`). |
 
-## Backend Reference
 
-- **API Repo:** [EventBuddy Backend](https://github.com/Foysal-Munsy/EventBuddy-Backend)
-- Start the backend before running the frontend or booking requests will fail. The frontend expects the backend at `http://localhost:8000` by default (adjust `BASE_URL` if different).
-
-## Admin Credentials
-
-Use the seeded admin account to access `/admin`:
-
-- **Email:** `eventbuddy.admin@gmail.com`
-- **Password:** `admin123`
-
-Update these values if your backend uses a different seed or environment variables.
 
 ## Features Overview
 
@@ -70,10 +69,22 @@ Update these values if your backend uses a different seed or environment variabl
 ## Screenshots
 
 ```
+
+###Admin Dashboard
 ![Admin Dashboard](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/admin-dashboard.png)
+###Create Event - Admin
 ![Create Event - Admin](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/admin-create-event.png)
+###Edit Event - Admin
 ![Edit Event - Admin](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/edit-event.png)
+###Delete Event - Admin
 ![Delete Event - Admin](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/delete-event.png)
+---
+###User Dashboard
+![User Dashboard](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/user-dashboard.png)
+###Event Book - User
+![Event Book - User](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/user-book.png)
+###Event Details
+![Event Details](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/event-detailss.png)
 ```
 
 ## Deployment Checklist
