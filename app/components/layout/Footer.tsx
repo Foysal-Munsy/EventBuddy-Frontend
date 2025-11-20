@@ -1,12 +1,11 @@
-import Link from 'next/link';
-import { HiOutlineTicket } from 'react-icons/hi';
+import Link from "next/link";
+import { HiOutlineTicket } from "react-icons/hi";
 
 export default function Footer() {
   const navLinks = [
-    { href: '/', label: 'Home' },
-    { href: '/events', label: 'Events' },
-    { href: '/about', label: 'About' },
-    { href: '/contact', label: 'Contact' },
+    { href: "/", label: "Home" },
+    { href: "/admin", label: "Admin " },
+    { href: "/dashboard", label: "User" },
   ];
 
   return (
@@ -15,8 +14,15 @@ export default function Footer() {
         <div className="flex items-center justify-between">
           {/* Left: Logo */}
           <Link href="/" className="flex items-center space-x-3">
-            <HiOutlineTicket size={22} className="text-(--primary)" aria-hidden />
-            <span className="text-lg font-semibold" style={{ color: 'var(--primary)' }}>
+            <HiOutlineTicket
+              size={22}
+              className="text-(--primary)"
+              aria-hidden
+            />
+            <span
+              className="text-lg font-semibold"
+              style={{ color: "var(--primary)" }}
+            >
               Event buddy.
             </span>
           </Link>
@@ -24,7 +30,11 @@ export default function Footer() {
           {/* Right: Nav Items */}
           <nav className="flex items-center space-x-6">
             {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="text-sm text-gray-600 hover:text-(--primary)">
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-sm text-gray-600 hover:text-(--primary)"
+              >
                 {link.label}
               </Link>
             ))}
@@ -32,10 +42,13 @@ export default function Footer() {
         </div>
 
         {/* Break / divider */}
-        <div className="my-6" style={{ height: 1, backgroundColor: 'rgba(44,37,117,0.129)' }} />
+        <div
+          className="my-6"
+          style={{ height: 1, backgroundColor: "rgba(44,37,117,0.129)" }}
+        />
 
         {/* Copyright */}
-        <div className="text-center text-sm" style={{ color: '#6A6A6A' }}>
+        <div className="text-center text-sm" style={{ color: "#6A6A6A" }}>
           © 2025 Event buddy. All rights reserved.
         </div>
       </div>
