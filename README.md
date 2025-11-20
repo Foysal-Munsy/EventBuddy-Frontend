@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+# EventBuddy Frontend
 
-First, run the development server:
+Interactive Next.js 16 application for discovering events, managing admin listings, and booking seats with real-time availability driven by the EventBuddy backend API.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+</div>
+
+## Tech Stack
+
+- **Framework:** Next.js 16 (App Router) + React 19
+- **Styling:** Tailwind CSS v4 (utility classes) & custom gradients
+- **UI Helpers:** `react-icons`, `sweetalert2`
+- **Language/Tooling:** TypeScript, ESLint 9
+
+## Prerequisites
+
+- Node.js **>= 20** (aligns with Next.js 16 requirements)
+- npm (bundled with Node) or another compatible package manager
+- Running EventBuddy backend API (see link below)
+
+## Environment Setup
+
+1. Clone the repository and install dependencies:
+
+	```bash
+	git clone <this-repo-url>
+	cd eventbuddy-frontend
+	npm install
+	```
+
+2. Provide API environment variables. Create `.env.local` in the project root:
+
+	```bash
+	BASE_URL=http://localhost:8000
+	```
+
+	`BASE_URL` must point to the backend instance that exposes `/events`, `/events/:id`, `/events/my-bookings`, etc.
+
+## Common Commands
+
+| Command          | Description |
+| ---------------- | ----------- |
+| `npm run dev`    | Start local dev server at `http://localhost:3000` with hot reload. |
+| `npm run lint`   | Run ESLint using the Next.js config. |
+| `npm run build`  | Create an optimized production build. |
+| `npm run start`  | Serve the production build (after `npm run build`). |
+
+## Backend Reference
+
+- **API Repo:** [EventBuddy Backend](https://github.com/Foysal-Munsy/EventBuddy-Backend)
+- Start the backend before running the frontend or booking requests will fail. The frontend expects the backend at `http://localhost:8000` by default (adjust `BASE_URL` if different).
+
+## Admin Credentials
+
+Use the seeded admin account to access `/admin`:
+
+- **Email:** `eventbuddy.admin@gmail.com`
+- **Password:** `admin123`
+
+Update these values if your backend uses a different seed or environment variables.
+
+## Features Overview
+
+- Public landing page with hero, upcoming events, and previous events.
+- Event details page with seat selector, booking workflow, and seat availability logic.
+- Auth-gated admin dashboard for CRUD operations on events.
+- Auth-gated user dashboard fetching real bookings from `GET /events/my-bookings`.
+- SweetAlert-driven flow for booking confirmation, errors, and auth prompts.
+
+## Screenshots
+
+```
+![Admin Dashboard](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/admin-dashboard.png)
+![Create Event - Admin](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/admin-create-event.png)
+![Edit Event - Admin](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/edit-event.png)
+![Delete Event - Admin](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/delete-event.png)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deployment Checklist
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Run `npm run lint` and ensure there are no warnings/errors.
+2. Run `npm run build` to verify the production bundle succeeds.
+3. Provision the necessary environment variables (e.g., `BASE_URL`) on your hosting platform.
+4. Confirm the backend endpoint is reachable from the deployed frontend.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Contributing
 
-## Learn More
+1. Fork & create a feature branch.
+2. Implement changes with tests/linters passing.
+3. Open a pull request describing your updates.
 
-To learn more about Next.js, take a look at the following resources:
+## License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project inherits the license defined in the repository (add/adjust LICENSE file as needed).
