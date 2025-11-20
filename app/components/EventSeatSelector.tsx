@@ -5,10 +5,12 @@ import { MdEventSeat } from "react-icons/md";
 
 interface EventSeatSelectorProps {
   maxSeats: number;
+  bookingDisabled?: boolean;
 }
 
 export default function EventSeatSelector({
   maxSeats,
+  bookingDisabled = false,
 }: EventSeatSelectorProps) {
   const normalized = Math.max(0, Math.floor(maxSeats));
   const seatOptions = useMemo(() => {
@@ -36,7 +38,9 @@ export default function EventSeatSelector({
     );
   }
 
-  const bookLabel = `Book ${selected} Seat${selected === 1 ? "" : "s"}`;
+  const bookLabel = bookingDisabled
+    ? "Booking unavailable"
+    : `Book ${selected} Seat${selected === 1 ? "" : "s"}`;
 
   return (
     <section className="rounded-3xl border border-[#ebe7fb] bg-white p-8 shadow-[0_25px_70px_rgba(106,78,198,0.08)]">
@@ -79,10 +83,21 @@ export default function EventSeatSelector({
 
       <button
         type="button"
-        className="mt-6 w-full rounded-2xl bg-[#5b61ff] py-4 text-lg font-semibold text-white shadow-lg transition hover:bg-[#4a50e6]"
+        disabled={bookingDisabled}
+        className={`mt-6 w-full rounded-2xl py-4 text-lg font-semibold text-white shadow-lg transition ${
+          bookingDisabled
+            ? "bg-[#a8a5bf] cursor-not-allowed"
+            : "bg-[#5b61ff] hover:bg-[#4a50e6]"
+        }`}
       >
         {bookLabel}
       </button>
+
+      {bookingDisabled && (
+        <p className="mt-3 text-center text-sm text-[#8a7ead]">
+          This event is no longer accepting new bookings.
+        </p>
+      )}
     </section>
   );
 }

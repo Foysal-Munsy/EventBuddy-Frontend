@@ -31,6 +31,7 @@ export default async function EventDetailPage({ params }: PageProps) {
   const { dateLabel, timeLabel } = formatDateParts(event.date);
   const tags = event.tags && event.tags.length ? event.tags : DEFAULT_TAGS;
   const spotsLeft = Math.max(event.totalSeats - event.bookedSeats, 0);
+  const bookingClosed = isPastDate(event.date);
 
   return (
     <div className="min-h-screen bg-[#f6f5ff] pb-16 pt-10">
@@ -73,7 +74,10 @@ export default async function EventDetailPage({ params }: PageProps) {
               location={event.location || "Location to be announced"}
             />
 
-            <EventSeatSelector maxSeats={event.totalSeats} />
+            <EventSeatSelector
+              maxSeats={event.totalSeats}
+              bookingDisabled={bookingClosed}
+            />
 
             <section>
               <h2 className="text-2xl font-semibold text-[#1f1b4b]">
@@ -93,6 +97,11 @@ export default async function EventDetailPage({ params }: PageProps) {
               <span className="text-sm text-[#8f83b6]">
                 ({event.bookedSeats} registered)
               </span>
+              {bookingClosed && (
+                <span className="text-sm font-semibold text-[#c25e5e]">
+                  Booking closed for this event.
+                </span>
+              )}
             </footer>
           </div>
         </article>
@@ -245,4 +254,11 @@ function formatDateParts(dateInput?: string) {
   }).format(date);
 
   return { dateLabel, timeLabel };
+}
+
+function isPastDate(dateInput?: string) {
+  if (!dateInput) return false;
+  const date = new Date(dateInput);
+  if (Number.isNaN(date.getTime())) return false;
+  return date.getTime() < Date.now();
 }
