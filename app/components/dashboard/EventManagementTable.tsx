@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { FiEdit2, FiEye, FiTrash2 } from "react-icons/fi";
+import Swal from "sweetalert2";
 
 export interface EventRecord {
   id: string;
@@ -24,18 +25,20 @@ export default function EventManagementTable({
   const [events, setEvents] = useState<EventRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const getToken = () => {
+    if (typeof window === "undefined") return null;
+    try {
+      return window.localStorage.getItem("authToken");
+    } catch {
+      return null;
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
     if (typeof window === "undefined") return undefined;
-
-    const getToken = () => {
-      try {
-        return window.localStorage.getItem("authToken");
-      } catch {
-        return null;
-      }
-    };
 
     const loadEvents = async () => {
       if (cancelled) return;
@@ -94,6 +97,78 @@ export default function EventManagementTable({
       window.removeEventListener("eventsUpdated", handleExternalUpdate);
     };
   }, [apiUrl, refreshKey]);
+
+  const handleDelete = async (eventId: string, title: string) => {
+    const confirmation = await Swal.fire({
+      title: `Delete ${title}?`,
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+      focusCancel: true,
+    });
+
+    if (!confirmation.isConfirmed) return;
+
+    const token = getToken();
+    if (!token) {
+      await Swal.fire({
+        title: "Not authorized",
+        text: "Please sign in as an admin before deleting events.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+
+    setDeletingId(eventId);
+    try {
+      const headers: HeadersInit = {};
+      if (token !== "session") {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`http://localhost:8000/events/${eventId}`, {
+        method: "DELETE",
+        credentials: "include",
+        headers,
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        const message =
+          payload?.detail || payload?.message || "Failed to delete event";
+        throw new Error(message);
+      }
+
+      setEvents((prev) => prev.filter((event) => event.id !== eventId));
+      window.dispatchEvent(new Event("eventsUpdated"));
+
+      await Swal.fire({
+        title: "Event deleted",
+        text: `${title} has been removed successfully.`,
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+        timerProgressBar: true,
+      });
+    } catch (deleteError) {
+      const message =
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Failed to delete event";
+      await Swal.fire({
+        title: "Deletion failed",
+        text: message,
+        icon: "error",
+        confirmButtonText: "Close",
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const tableBody = useMemo(() => {
     if (loading) {
@@ -155,14 +230,19 @@ export default function EventManagementTable({
             <IconButton label="Edit event" variant="primary">
               <FiEdit2 />
             </IconButton>
-            <IconButton label="Delete event" variant="danger">
+            <IconButton
+              label="Delete event"
+              variant="danger"
+              onClick={() => handleDelete(event.id, event.title)}
+              disabled={deletingId === event.id}
+            >
               <FiTrash2 />
             </IconButton>
           </div>
         </td>
       </tr>
     ));
-  }, [error, events, loading]);
+  }, [deletingId, error, events, loading]);
 
   return (
     <div className="overflow-hidden">
@@ -228,17 +308,34 @@ interface IconButtonProps {
   children: React.ReactNode;
   label: string;
   variant?: "primary" | "danger";
+  onClick?: () => void;
+  disabled?: boolean;
 }
 
-function IconButton({ children, label, variant = "primary" }: IconButtonProps) {
-  const base = "p-2 rounded-full text-base transition-colors duration-150";
+function IconButton({
+  children,
+  label,
+  variant = "primary",
+  onClick,
+  disabled,
+}: IconButtonProps) {
+  const base =
+    "p-2 rounded-full text-base transition-colors duration-150 focus:outline-none";
   const palette =
     variant === "danger"
       ? "text-red-500 hover:bg-red-50"
       : "text-[#2d2a6a] hover:bg-indigo-50";
 
   return (
-    <button type="button" aria-label={label} className={`${base} ${palette}`}>
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      disabled={disabled}
+      className={`${base} ${palette} ${
+        disabled ? "opacity-50 cursor-not-allowed" : ""
+      }`}
+    >
       {children}
     </button>
   );
