@@ -21,16 +21,16 @@ export default function EventSeatSelector({
   const router = useRouter();
   const takenSeats = Math.max(0, Math.floor(bookedSeats));
   const availableSeats = Math.max(0, Math.floor(maxSeats) - takenSeats);
-  const normalized = availableSeats;
+
   const seatOptions = useMemo(() => {
-    if (normalized <= 0) return [];
-    const limit = Math.max(1, Math.min(4, normalized));
-    return Array.from({ length: limit }, (_, index) => index + 1);
-  }, [normalized]);
+    if (availableSeats <= 0) return [];
+    const upperBound = Math.min(4, availableSeats);
+    return Array.from({ length: upperBound }, (_, index) => index + 1);
+  }, [availableSeats]);
 
   const [selected, setSelected] = useState(() => seatOptions[0] ?? 0);
   const [submitting, setSubmitting] = useState(false);
-  const disabled = seatOptions.length === 0;
+  const noSeatsLeft = seatOptions.length === 0;
 
   useEffect(() => {
     if (!seatOptions.length) {
@@ -42,28 +42,36 @@ export default function EventSeatSelector({
     }
   }, [seatOptions, selected]);
 
-  if (disabled) {
-    return (
-      <section className="rounded-3xl border border-[#ebe7fb] bg-white p-8 text-center shadow-[0_25px_70px_rgba(106,78,198,0.08)]">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#f4f3ff] text-3xl text-[#6a4ec6]">
-          <MdEventSeat />
-        </div>
-        <h2 className="mt-6 text-2xl font-semibold text-[#2d2a6a]">
-          Seats unavailable
-        </h2>
-        <p className="mt-2 text-sm text-[#8a7ead]">
-          All seats for this event are booked. Please check back later.
-        </p>
-      </section>
-    );
-  }
+  const hasUserSession = () => {
+    if (typeof window === "undefined") return false;
+    try {
+      const token = window.localStorage.getItem("authToken");
+      const user = window.localStorage.getItem("user");
+      return Boolean(token || user);
+    } catch {
+      return false;
+    }
+  };
 
-  const bookLabel = bookingDisabled
-    ? "Booking unavailable"
-    : `Book ${selected} Seat${selected === 1 ? "" : "s"}`;
+  const promptAuth = async () => {
+    await Swal.fire({
+      title: "Sign in required",
+      html:
+        `You need to be signed in to book seats.<br/><br/>` +
+        `<a href="/signin" class="text-[#5b61ff] font-semibold">Sign in</a> or ` +
+        `<a href="/signup" class="text-[#5b61ff] font-semibold">Create an account</a>.`,
+      icon: "info",
+      confirmButtonText: "Close",
+    });
+  };
 
   const handleBooking = async () => {
-    if (bookingDisabled || disabled || submitting) return;
+    if (bookingDisabled || noSeatsLeft || submitting) return;
+
+    if (!hasUserSession()) {
+      await promptAuth();
+      return;
+    }
 
     const maxSelectable = Math.min(4, availableSeats);
     const prompt = await Swal.fire({
@@ -148,6 +156,24 @@ export default function EventSeatSelector({
     }
   };
 
+  if (noSeatsLeft) {
+    return (
+      <section className="rounded-3xl border border-[#ebe7fb] bg-white p-8 text-center shadow-[0_25px_70px_rgba(106,78,198,0.08)]">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#f4f3ff] text-3xl text-[#6a4ec6]">
+          <MdEventSeat />
+        </div>
+        <h2 className="mt-6 text-2xl font-semibold text-[#2d2a6a]">
+          Seats unavailable
+        </h2>
+        <p className="mt-2 text-sm text-[#8a7ead]">
+          All seats for this event are booked. Please check back later.
+        </p>
+      </section>
+    );
+  }
+
+  const bookLabel = bookingDisabled ? "Booking unavailable" : "Book Now";
+
   return (
     <section className="rounded-3xl border border-[#ebe7fb] bg-white p-8 shadow-[0_25px_70px_rgba(106,78,198,0.08)]">
       <div className="flex items-center justify-between">
@@ -189,10 +215,10 @@ export default function EventSeatSelector({
 
       <button
         type="button"
-        disabled={bookingDisabled || disabled || submitting}
+        disabled={bookingDisabled || submitting}
         onClick={handleBooking}
         className={`mt-6 w-full rounded-2xl py-4 text-lg font-semibold text-white shadow-lg transition ${
-          bookingDisabled || disabled || submitting
+          bookingDisabled || submitting
             ? "bg-[#a8a5bf] cursor-not-allowed"
             : "bg-[#5b61ff] hover:bg-[#4a50e6]"
         }`}
