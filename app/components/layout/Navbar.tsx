@@ -156,7 +156,7 @@ export default function Navbar() {
                   Sign In
                 </Link>
                 <Link
-                  href="/signup"
+                  href="/register"
                   className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium"
                   style={{
                     backgroundImage: "var(--btn-gradient)",
