@@ -29,7 +29,7 @@ export default function Navbar() {
                 <HiOutlineTicket size={28} className="text-(--primary)" aria-hidden />
               </div>
               <span className="text-xl font-bold" style={{ color: 'var(--primary)' }}>
-                EventBuddy
+                Event buddy.
               </span>
             </Link>
           </div>
