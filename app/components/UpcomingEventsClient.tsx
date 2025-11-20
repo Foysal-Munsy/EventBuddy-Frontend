@@ -5,9 +5,15 @@ import EventCard, { EventCardProps } from "./EventCard";
 
 type Props = {
   posts: EventCardProps[];
+  title?: string;
+  emptyMessage?: string;
 };
 
-export default function UpcomingEventsClient({ posts }: Props) {
+export default function UpcomingEventsClient({
+  posts,
+  title = "Upcoming Events",
+  emptyMessage,
+}: Props) {
   const pageSize = 3;
   const [page, setPage] = useState(1);
 
@@ -27,11 +33,13 @@ export default function UpcomingEventsClient({ posts }: Props) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <h2 className="text-3xl mt-4 font-semibold text-indigo-900 mb-6">
-        Upcoming Events
+        {title}
       </h2>
 
       {posts.length === 0 ? (
-        <div className="text-gray-600">No upcoming events.</div>
+        <div className="text-gray-600">
+          {emptyMessage ?? `No ${title.toLowerCase()}.`}
+        </div>
       ) : (
         <>
           <div className="grid gap-6 md:grid-cols-3">
