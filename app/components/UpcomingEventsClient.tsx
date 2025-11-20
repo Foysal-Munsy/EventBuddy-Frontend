@@ -44,17 +44,7 @@ export default function UpcomingEventsClient({
         <>
           <div className="grid gap-6 md:grid-cols-3">
             {pageItems.map((post) => (
-              <EventCard
-                key={post.id}
-                title={post.title}
-                description={post.description}
-                date={post.date}
-                location={post.location}
-                totalSeats={post.totalSeats}
-                bookedSeats={post.bookedSeats}
-                imageUrl={post.imageUrl}
-                tags={post.tags}
-              />
+              <EventCard key={post.id} {...post} />
             ))}
           </div>
 
