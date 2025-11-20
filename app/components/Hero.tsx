@@ -6,29 +6,29 @@ export default function Hero() {
 
   return (
     <section className="relative overflow-hidden py-24 bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* left + right tickets */}
-      <div className="pointer-events-none">
-        <div className="hidden md:block absolute left-8 top-8 w-56 -rotate-12 opacity-95 drop-shadow-xl">
-          <Image
-            src={ticket}
-            alt="left ticket"
-            width={360}
-            height={180}
-            unoptimized
-          />
-        </div>
-        <div className="hidden md:block absolute right-8 top-8 w-56 rotate-12 opacity-95 drop-shadow-xl">
-          <Image
-            src={ticket}
-            alt="right ticket"
-            width={360}
-            height={180}
-            unoptimized
-          />
-        </div>
-      </div>
+      {/* decorative tickets moved inside container for exact alignment */}
 
-      <div className="relative max-w-6xl mx-auto px-6 text-center">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="pointer-events-none">
+          <div className="hidden md:block absolute -left-12 sm:-left-16 lg:-left-20 top-8 w-56 -rotate-12 opacity-95 drop-shadow-xl">
+            <Image
+              src={ticket}
+              alt="left ticket"
+              width={360}
+              height={180}
+              unoptimized
+            />
+          </div>
+          <div className="hidden md:block absolute -right-12 sm:-right-16 lg:-right-20 top-8 w-56 rotate-12 opacity-95 drop-shadow-xl">
+            <Image
+              src={ticket}
+              alt="right ticket"
+              width={360}
+              height={180}
+              unoptimized
+            />
+          </div>
+        </div>
         <p className="text-[36px] md:text-[78px] font-semibold text-[#250A63]">
           Discover
         </p>
