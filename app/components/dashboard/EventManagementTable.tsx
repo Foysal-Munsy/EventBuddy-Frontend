@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FiEdit2, FiEye, FiTrash2 } from "react-icons/fi";
 import Swal from "sweetalert2";
@@ -234,7 +235,11 @@ export default function EventManagementTable({
         </td>
         <td className="px-6 py-4">
           <div className="flex items-center gap-3">
-            <IconButton label="View event" variant="primary">
+            <IconButton
+              label="View event"
+              variant="primary"
+              href={`/events/${event.id}`}
+            >
               <FiEye />
             </IconButton>
             <IconButton
@@ -329,6 +334,7 @@ interface IconButtonProps {
   variant?: "primary" | "danger";
   onClick?: () => void;
   disabled?: boolean;
+  href?: string;
 }
 
 function IconButton({
@@ -337,13 +343,26 @@ function IconButton({
   variant = "primary",
   onClick,
   disabled,
+  href,
 }: IconButtonProps) {
   const base =
-    "p-2 rounded-full text-base transition-colors duration-150 focus:outline-none";
+    "p-2 rounded-full text-base transition-colors duration-150 focus:outline-none inline-flex items-center justify-center";
   const palette =
     variant === "danger"
       ? "text-red-500 hover:bg-red-50"
       : "text-[#2d2a6a] hover:bg-indigo-50";
+
+  const className = `${base} ${palette} ${
+    disabled ? "opacity-50 cursor-not-allowed" : ""
+  }`;
+
+  if (href) {
+    return (
+      <Link href={href} aria-label={label} className={className}>
+        {children}
+      </Link>
+    );
+  }
 
   return (
     <button
@@ -351,9 +370,7 @@ function IconButton({
       aria-label={label}
       onClick={onClick}
       disabled={disabled}
-      className={`${base} ${palette} ${
-        disabled ? "opacity-50 cursor-not-allowed" : ""
-      }`}
+      className={className}
     >
       {children}
     </button>
