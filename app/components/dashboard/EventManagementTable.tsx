@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { FiEdit2, FiEye, FiTrash2 } from "react-icons/fi";
 import Swal from "sweetalert2";
 
@@ -11,30 +11,34 @@ export interface EventRecord {
   location: string;
   bookedSeats: number;
   totalSeats: number;
+  description?: string;
+  imageUrl?: string;
 }
 
 interface EventManagementTableProps {
   apiUrl?: string;
   refreshKey?: number;
+  onEdit?: (event: EventRecord) => void;
 }
 
 export default function EventManagementTable({
   apiUrl = "http://localhost:8000/events",
   refreshKey = 0,
+  onEdit,
 }: EventManagementTableProps) {
   const [events, setEvents] = useState<EventRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const getToken = () => {
+  const getToken = useCallback(() => {
     if (typeof window === "undefined") return null;
     try {
       return window.localStorage.getItem("authToken");
     } catch {
       return null;
     }
-  };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,79 +100,85 @@ export default function EventManagementTable({
       window.removeEventListener("authChange", handleAuthChange);
       window.removeEventListener("eventsUpdated", handleExternalUpdate);
     };
-  }, [apiUrl, refreshKey]);
+  }, [apiUrl, refreshKey, getToken]);
 
-  const handleDelete = async (eventId: string, title: string) => {
-    const confirmation = await Swal.fire({
-      title: `Delete ${title}?`,
-      text: "This action cannot be undone.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, delete",
-      cancelButtonText: "Cancel",
-      reverseButtons: true,
-      focusCancel: true,
-    });
-
-    if (!confirmation.isConfirmed) return;
-
-    const token = getToken();
-    if (!token) {
-      await Swal.fire({
-        title: "Not authorized",
-        text: "Please sign in as an admin before deleting events.",
-        icon: "error",
-        confirmButtonText: "OK",
+  const handleDelete = useCallback(
+    async (eventId: string, title: string) => {
+      const confirmation = await Swal.fire({
+        title: `Delete ${title}?`,
+        text: "This action cannot be undone.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete",
+        cancelButtonText: "Cancel",
+        reverseButtons: true,
+        focusCancel: true,
       });
-      return;
-    }
 
-    setDeletingId(eventId);
-    try {
-      const headers: HeadersInit = {};
-      if (token !== "session") {
-        headers["Authorization"] = `Bearer ${token}`;
+      if (!confirmation.isConfirmed) return;
+
+      const token = getToken();
+      if (!token) {
+        await Swal.fire({
+          title: "Not authorized",
+          text: "Please sign in as an admin before deleting events.",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+        return;
       }
 
-      const response = await fetch(`http://localhost:8000/events/${eventId}`, {
-        method: "DELETE",
-        credentials: "include",
-        headers,
-      });
+      setDeletingId(eventId);
+      try {
+        const headers: HeadersInit = {};
+        if (token !== "session") {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
 
-      if (!response.ok) {
-        const payload = await response.json().catch(() => ({}));
+        const response = await fetch(
+          `http://localhost:8000/events/${eventId}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+            headers,
+          }
+        );
+
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}));
+          const message =
+            payload?.detail || payload?.message || "Failed to delete event";
+          throw new Error(message);
+        }
+
+        setEvents((prev) => prev.filter((event) => event.id !== eventId));
+        window.dispatchEvent(new Event("eventsUpdated"));
+
+        await Swal.fire({
+          title: "Event deleted",
+          text: `${title} has been removed successfully.`,
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+          timerProgressBar: true,
+        });
+      } catch (deleteError) {
         const message =
-          payload?.detail || payload?.message || "Failed to delete event";
-        throw new Error(message);
+          deleteError instanceof Error
+            ? deleteError.message
+            : "Failed to delete event";
+        await Swal.fire({
+          title: "Deletion failed",
+          text: message,
+          icon: "error",
+          confirmButtonText: "Close",
+        });
+      } finally {
+        setDeletingId(null);
       }
-
-      setEvents((prev) => prev.filter((event) => event.id !== eventId));
-      window.dispatchEvent(new Event("eventsUpdated"));
-
-      await Swal.fire({
-        title: "Event deleted",
-        text: `${title} has been removed successfully.`,
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false,
-        timerProgressBar: true,
-      });
-    } catch (deleteError) {
-      const message =
-        deleteError instanceof Error
-          ? deleteError.message
-          : "Failed to delete event";
-      await Swal.fire({
-        title: "Deletion failed",
-        text: message,
-        icon: "error",
-        confirmButtonText: "Close",
-      });
-    } finally {
-      setDeletingId(null);
-    }
-  };
+    },
+    [getToken]
+  );
 
   const tableBody = useMemo(() => {
     if (loading) {
@@ -227,7 +237,12 @@ export default function EventManagementTable({
             <IconButton label="View event" variant="primary">
               <FiEye />
             </IconButton>
-            <IconButton label="Edit event" variant="primary">
+            <IconButton
+              label="Edit event"
+              variant="primary"
+              onClick={() => onEdit?.(event)}
+              disabled={!onEdit}
+            >
               <FiEdit2 />
             </IconButton>
             <IconButton
@@ -242,7 +257,7 @@ export default function EventManagementTable({
         </td>
       </tr>
     ));
-  }, [deletingId, error, events, loading]);
+  }, [deletingId, error, events, loading, onEdit, handleDelete]);
 
   return (
     <div className="overflow-hidden">
@@ -301,6 +316,10 @@ function normalizeEvent(raw: unknown, index: number): EventRecord {
         : (record?.city as string) || "",
     bookedSeats,
     totalSeats,
+    description:
+      typeof record?.description === "string" ? record.description : "",
+    imageUrl:
+      typeof record?.imageUrl === "string" ? record.imageUrl : undefined,
   };
 }
 

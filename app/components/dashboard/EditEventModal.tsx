@@ -1,14 +1,22 @@
 "use client";
 
 import Image from "next/image";
-import { useState, type FormEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import Swal from "sweetalert2";
-import { combineDateTime } from "./eventFormUtils";
+import type { EventRecord } from "./EventManagementTable";
+import { combineDateTime, splitDateTimeFields } from "./eventFormUtils";
 
-interface CreateEventModalProps {
+interface EditEventModalProps {
   isOpen: boolean;
+  event: EventRecord | null;
   onClose: () => void;
-  onCreated: () => void;
+  onUpdated: () => void;
 }
 
 interface FormState {
@@ -32,16 +40,18 @@ const emptyForm: FormState = {
 const inputClasses =
   "w-full px-4 py-3 rounded-xl border border-[#ece7f8] bg-[#fbfbfd] text-sm text-[#2d2a6a] outline-none focus:ring-2 focus:ring-[#c4bcff]";
 
-export default function CreateEventModal({
+export default function EditEventModal({
   isOpen,
+  event,
   onClose,
-  onCreated,
-}: CreateEventModalProps) {
+  onUpdated,
+}: EditEventModalProps) {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imageCleared, setImageCleared] = useState(false);
 
   const imgbbKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
   const imgbbEnabled = Boolean(imgbbKey);
@@ -51,7 +61,31 @@ export default function CreateEventModal({
     setImageFile(null);
     setPreviewUrl(null);
     setError(null);
+    setImageCleared(false);
   };
+
+  useEffect(() => {
+    if (!isOpen) {
+      resetState();
+      return;
+    }
+
+    if (event) {
+      const { datePart, timePart } = splitDateTimeFields(event.date);
+      setForm({
+        title: event.title ?? "",
+        date: datePart,
+        time: timePart,
+        description: event.description ?? "",
+        location: event.location ?? "",
+        totalSeats: event.totalSeats ? String(event.totalSeats) : "",
+      });
+      setPreviewUrl(event.imageUrl ?? null);
+      setImageFile(null);
+      setError(null);
+      setImageCleared(!event.imageUrl);
+    }
+  }, [event, isOpen]);
 
   const closeModal = () => {
     if (submitting) return;
@@ -67,10 +101,12 @@ export default function CreateEventModal({
     if (!files?.length) {
       setImageFile(null);
       setPreviewUrl(null);
+      setImageCleared(true);
       return;
     }
     const file = files[0];
     setImageFile(file);
+    setImageCleared(false);
     const reader = new FileReader();
     reader.onload = () => setPreviewUrl(reader.result as string);
     reader.readAsDataURL(file);
@@ -110,15 +146,17 @@ export default function CreateEventModal({
     return headers;
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = async (eventSubmit: FormEvent<HTMLFormElement>) => {
+    eventSubmit.preventDefault();
+    if (!event) return;
+
     setSubmitting(true);
     setError(null);
 
     try {
       const token = localStorage.getItem("authToken");
       if (!token) {
-        throw new Error("You must be signed in to create an event.");
+        throw new Error("You must be signed in to update an event.");
       }
 
       const isoDate = combineDateTime(form.date, form.time);
@@ -134,13 +172,13 @@ export default function CreateEventModal({
         throw new Error("Total seats must be a number.");
       }
 
-      let imageUrl: string | null = null;
+      let imageUrl = imageCleared ? "" : event.imageUrl ?? "";
       if (imageFile && imgbbEnabled) {
         imageUrl = await uploadImage();
       }
 
-      const response = await fetch("http://localhost:8000/events/create", {
-        method: "POST",
+      const response = await fetch(`http://localhost:8000/events/${event.id}`, {
+        method: "PATCH",
         credentials: "include",
         headers: buildHeaders(token),
         body: JSON.stringify({
@@ -149,36 +187,36 @@ export default function CreateEventModal({
           location: form.location,
           date: isoDate,
           totalSeats: seatsValue,
-          imageUrl: imageUrl ?? "",
+          imageUrl,
         }),
       });
 
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
         const message =
-          payload?.detail || payload?.message || "Failed to create event";
+          payload?.detail || payload?.message || "Failed to update event";
         throw new Error(message);
       }
 
       window.dispatchEvent(new Event("eventsUpdated"));
 
       await Swal.fire({
-        title: "Event created",
-        text: "Your event has been added successfully.",
+        title: "Event updated",
+        text: "Your changes have been saved successfully.",
         icon: "success",
         timer: 1800,
         showConfirmButton: false,
         timerProgressBar: true,
       });
 
-      onCreated();
+      onUpdated();
       resetState();
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Failed to create event";
+        err instanceof Error ? err.message : "Failed to update event";
       setError(message);
       await Swal.fire({
-        title: "Could not create event",
+        title: "Could not update event",
         text: message,
         icon: "error",
         confirmButtonText: "Got it",
@@ -188,25 +226,25 @@ export default function CreateEventModal({
     }
   };
 
-  if (!isOpen) return null;
+  const modalTitle = useMemo(() => event?.title || "Edit Event", [event]);
+
+  if (!isOpen || !event) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div className="bg-white rounded-4xl w-full max-w-3xl shadow-2xl border border-[#ece7f8]">
         <div className="flex items-start justify-between px-8 pt-6 pb-4 border-b border-[#f1eefc]">
           <div>
-            <h3 className="text-2xl font-bold text-[#2d2a6a]">
-              Create New Event
-            </h3>
+            <h3 className="text-2xl font-bold text-[#2d2a6a]">{modalTitle}</h3>
             <p className="text-sm text-[#7a6aa8] mt-1">
-              Manage every detail before publishing your event.
+              Update any event detail below.
             </p>
           </div>
           <button
             type="button"
             className="text-2xl text-[#7a6aa8] hover:text-[#2d2a6a]"
             onClick={closeModal}
-            aria-label="Close create event modal"
+            aria-label="Close edit event modal"
           >
             &times;
           </button>
@@ -352,7 +390,7 @@ export default function CreateEventModal({
                 backgroundImage: "linear-gradient(135deg, #5b61ff, #376bff)",
               }}
             >
-              {submitting ? "Creating..." : "Create Event"}
+              {submitting ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </form>

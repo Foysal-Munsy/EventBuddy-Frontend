@@ -1,16 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import EventManagementTable from "./EventManagementTable";
+import EventManagementTable, { type EventRecord } from "./EventManagementTable";
 import CreateEventModal from "./CreateEventModal";
+import EditEventModal from "./EditEventModal";
 
 export default function AdminDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [editingEvent, setEditingEvent] = useState<EventRecord | null>(null);
 
   const handleCloseModal = () => setIsModalOpen(false);
   const handleEventCreated = () => {
     setIsModalOpen(false);
+    setRefreshKey((prev) => prev + 1);
+  };
+
+  const handleEventUpdated = () => {
+    setEditingEvent(null);
     setRefreshKey((prev) => prev + 1);
   };
 
@@ -47,7 +54,10 @@ export default function AdminDashboard() {
               Create Event
             </button>
           </div>
-          <EventManagementTable refreshKey={refreshKey} />
+          <EventManagementTable
+            refreshKey={refreshKey}
+            onEdit={(event) => setEditingEvent(event)}
+          />
         </div>
       </section>
 
@@ -55,6 +65,12 @@ export default function AdminDashboard() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onCreated={handleEventCreated}
+      />
+      <EditEventModal
+        isOpen={Boolean(editingEvent)}
+        event={editingEvent}
+        onClose={() => setEditingEvent(null)}
+        onUpdated={handleEventUpdated}
       />
     </main>
   );
