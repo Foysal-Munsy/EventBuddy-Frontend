@@ -68,6 +68,13 @@ Use the seeded admin account to access `/admin`:
 - SweetAlert-driven flow for booking confirmation, errors, and auth prompts.
 
 ## Screenshots
+### Home - Upcoming Events
+![Upcoming Events](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/upcoming-events.png)
+
+### Home - Previous Events
+![Previous Events](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/previous-events.png)
+
+---
 
 ### Admin Dashboard
 ![Admin Dashboard](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/admin-dashboard.png)
