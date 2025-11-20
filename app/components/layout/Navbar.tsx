@@ -25,6 +25,18 @@ export default function Navbar() {
     return `${first} ${last}`.trim() || "";
   };
 
+  const getUserRole = (u: Record<string, unknown> | null) => {
+    if (!u) return "";
+    const directRole = u["role"];
+    if (typeof directRole === "string") return directRole.toLowerCase();
+    const roles = u["roles"];
+    if (Array.isArray(roles)) {
+      const firstRole = roles.find((role) => typeof role === "string");
+      if (firstRole) return String(firstRole).toLowerCase();
+    }
+    return "";
+  };
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     onScroll();
@@ -109,6 +121,10 @@ export default function Navbar() {
     router.push("/");
   };
 
+  const userRole = getUserRole(user);
+  const dashboardHref = userRole === "admin" ? "/admin" : "/dashboard";
+  const dashboardLabel = userRole === "admin" ? "Admin Dashboard" : "Dashboard";
+
   return (
     <nav
       className={`sticky top-0 z-50 transition-colors duration-200 ${
@@ -168,12 +184,22 @@ export default function Navbar() {
               </>
             ) : (
               <div className="flex items-center space-x-3">
+                <Link
+                  href={dashboardHref}
+                  className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium"
+                  style={{
+                    backgroundImage: "var(--btn-gradient)",
+                    color: "var(--primary-foreground)",
+                  }}
+                >
+                  {dashboardLabel}
+                </Link>
                 <span className="text-sm font-medium text-gray-800">
                   {getUserDisplayName(user) || "Account"}
                 </span>
                 <button
                   onClick={handleLogout}
-                  className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-red-50 text-red-600"
+                  className="cursor-pointer inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-red-50 text-red-600"
                 >
                   Logout
                 </button>

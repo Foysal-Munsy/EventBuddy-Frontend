@@ -4,8 +4,7 @@ import { HiOutlineTicket } from "react-icons/hi";
 export default function Footer() {
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "/admin", label: "Admin " },
-    { href: "/dashboard", label: "User" },
+    { href: "/", label: "Privacy Policy" },
   ];
 
   return (
