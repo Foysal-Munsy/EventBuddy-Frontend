@@ -68,24 +68,28 @@ Use the seeded admin account to access `/admin`:
 
 ## Screenshots
 
-```
-
-###Admin Dashboard
+### Admin Dashboard
 ![Admin Dashboard](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/admin-dashboard.png)
-###Create Event - Admin
+
+### Create Event - Admin
 ![Create Event - Admin](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/admin-create-event.png)
-###Edit Event - Admin
+
+### Edit Event - Admin
 ![Edit Event - Admin](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/edit-event.png)
-###Delete Event - Admin
+
+### Delete Event - Admin
 ![Delete Event - Admin](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/delete-event.png)
+
 ---
-###User Dashboard
+
+### User Dashboard
 ![User Dashboard](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/user-dashboard.png)
-###Event Book - User
+
+### Event Book - User
 ![Event Book - User](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/user-book.png)
-###Event Details
+
+### Event Details
 ![Event Details](https://github.com/Foysal-Munsy/readme-assets/blob/main/eventbuddy-frontend/event-detailss.png)
-```
 
 ## Deployment Checklist
 
