@@ -13,7 +13,7 @@ export interface EventCardProps {
   totalSeats?: number;
   bookedSeats?: number;
   imageUrl?: string;
-  tags?: ["tech", "conference", "ai"];
+  tags?: string[];
 }
 
 export default function EventCard({
@@ -24,7 +24,7 @@ export default function EventCard({
   totalSeats = 0,
   bookedSeats = 0,
   imageUrl,
-  tags = ["tech", "conference", "ai"],
+  tags = ["Tech", "Conference", "Ai"],
 }: EventCardProps) {
   const d = new Date(date);
   const month = d.toLocaleString("en-US", { month: "short" }).toUpperCase();
@@ -37,45 +37,51 @@ export default function EventCard({
   const spotsLeft = Math.max(0, (totalSeats || 0) - (bookedSeats || 0));
 
   return (
-    <article className="bg-white rounded rounded-tl-[50px] rounded-br-[50px] shadow-md overflow-hidden border border-gray-100">
+    <article className="relative bg-white shadow-[0_8px_30px_rgba(133,112,173,0.12)] overflow-hidden border border-[rgba(133,112,173,0.06)] rounded-tr-lg rounded-bl-lg rounded-br-[48px] rounded-tl-[48px]">
+      {/* top-left cut */}
+      <div
+        className="absolute -top-4 -left-4 w-10 h-10 bg-white rotate-45 shadow-sm"
+        aria-hidden
+      />
+
       <div className="relative">
         {imageUrl ? (
-          // image
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imageUrl}
             alt={title}
-            className="w-full h-48 object-cover"
+            className="w-full h-52 object-cover"
           />
         ) : (
-          <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-400">
+          <div className="w-full h-52 bg-gray-100 flex items-center justify-center text-gray-400">
             No image
           </div>
         )}
       </div>
 
-      <div className="p-6 pt-10">
-        <div className="flex gap-1 items-center">
-          <div className="px-3">
+      <div className="p-6">
+        <div className="flex items-center gap-2">
+          <div className="px-3 py-2 text-center">
             <div className="text-xs text-indigo-600 font-bold">{month}</div>
             <div className="text-xl font-extrabold text-gray-900">{day}</div>
           </div>
-          <h3 className="text-2xl font-semibold text-indigo-900">{title}</h3>
+          <h3 className="text-2xl font-semibold text-[#231F48] leading-tight">
+            {title}
+          </h3>
         </div>
-        <p className="mt-2 text-gray-600 line-clamp-3">{description}</p>
-
-        <div className="mt-4 flex items-center text-gray-600 space-x-4">
-          <div className="flex items-center space-x-2">
-            <FaCalendarAlt className="text-[#8570AD]" />
-            <span className="text-sm">{weekday}</span>
+        <p className="mt-2 text-gray-600 text-sm line-clamp-3">{description}</p>
+        <div className="mt-4 flex flex-wrap items-center text-gray-600 gap-4">
+          <div className="flex items-center gap-2 text-sm text-[#8570AD]">
+            <FaCalendarAlt />
+            <span>{weekday}</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <FaClock className="text-[#8570AD]" />
-            <span className="text-sm">{time}</span>
+          <div className="flex items-center gap-2 text-sm text-[#8570AD]">
+            <FaClock />
+            <span>{time}</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <FaMapMarkerAlt className="text-[#8570AD]" />
-            <span className="text-sm">{location}</span>
+          <div className="flex items-center gap-2 text-sm text-[#8570AD]">
+            <FaMapMarkerAlt />
+            <span>{location}</span>
           </div>
         </div>
 
@@ -84,7 +90,7 @@ export default function EventCard({
             {tags.map((t) => (
               <span
                 key={t}
-                className="text-sm bg-[#DADEFF] text-[#1D4ED8] px-3 py-1 rounded-lg"
+                className="text-sm bg-[#F1F2FF] text-[#5647D6] px-3 py-1 rounded-lg"
               >
                 • {t}
               </span>
@@ -92,10 +98,12 @@ export default function EventCard({
           </div>
         )}
 
-        <div className="mt-6 pt-4 border-t flex items-center justify-between text-sm text-[#8570AD]">
-          <div className="flex items-center space-x-2">
-            <MdEventSeat />
-            <span>{spotsLeft} Spots Left</span>
+        <div className="mt-6 pt-4 border-t border-[rgba(133,112,173,0.06)] flex items-center justify-between text-sm text-[#8570AD]">
+          <div className="flex items-center gap-2">
+            <MdEventSeat className="text-[#8570AD]" />
+            <span className="font-medium text-[#6B577F]">
+              {spotsLeft} Spots Left
+            </span>
           </div>
 
           <div className="text-right text-[#8570AD]">
