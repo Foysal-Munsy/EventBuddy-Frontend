@@ -1,18 +1,27 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { MdEventSeat } from "react-icons/md";
+import Swal from "sweetalert2";
 
 interface EventSeatSelectorProps {
+  eventId: string;
   maxSeats: number;
+  bookedSeats?: number;
   bookingDisabled?: boolean;
 }
 
 export default function EventSeatSelector({
+  eventId,
   maxSeats,
+  bookedSeats = 0,
   bookingDisabled = false,
 }: EventSeatSelectorProps) {
-  const normalized = Math.max(0, Math.floor(maxSeats));
+  const router = useRouter();
+  const takenSeats = Math.max(0, Math.floor(bookedSeats));
+  const availableSeats = Math.max(0, Math.floor(maxSeats) - takenSeats);
+  const normalized = availableSeats;
   const seatOptions = useMemo(() => {
     if (normalized <= 0) return [];
     const limit = Math.max(1, Math.min(4, normalized));
@@ -20,7 +29,18 @@ export default function EventSeatSelector({
   }, [normalized]);
 
   const [selected, setSelected] = useState(() => seatOptions[0] ?? 0);
+  const [submitting, setSubmitting] = useState(false);
   const disabled = seatOptions.length === 0;
+
+  useEffect(() => {
+    if (!seatOptions.length) {
+      setSelected(0);
+      return;
+    }
+    if (!seatOptions.includes(selected)) {
+      setSelected(seatOptions[0] ?? 0);
+    }
+  }, [seatOptions, selected]);
 
   if (disabled) {
     return (
@@ -42,6 +62,92 @@ export default function EventSeatSelector({
     ? "Booking unavailable"
     : `Book ${selected} Seat${selected === 1 ? "" : "s"}`;
 
+  const handleBooking = async () => {
+    if (bookingDisabled || disabled || submitting) return;
+
+    const maxSelectable = Math.min(4, availableSeats);
+    const prompt = await Swal.fire({
+      title: "How many seats do you want to book? (1-4)",
+      input: "number",
+      inputValue: selected || seatOptions[0] || 1,
+      inputAttributes: {
+        min: "1",
+        max: String(maxSelectable),
+      },
+      showCancelButton: true,
+      confirmButtonText: "Confirm booking",
+      cancelButtonText: "Cancel",
+      focusConfirm: false,
+      preConfirm: (value) => {
+        const seats = Number(value);
+        if (!Number.isInteger(seats) || seats < 1 || seats > maxSelectable) {
+          Swal.showValidationMessage(
+            `Enter a number between 1 and ${maxSelectable}.`
+          );
+          return false;
+        }
+        return seats;
+      },
+    });
+
+    if (!prompt.isConfirmed) return;
+    const seatsToBook = Number(prompt.value);
+    if (!Number.isInteger(seatsToBook)) return;
+
+    try {
+      setSubmitting(true);
+      const response = await fetch(
+        `http://localhost:8000/events/${encodeURIComponent(eventId)}/book`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ seats: seatsToBook }),
+        }
+      );
+
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        const message =
+          payload?.message ||
+          payload?.detail ||
+          `Unable to book ${seatsToBook} seat(s).`;
+        await Swal.fire({
+          title: "Booking failed",
+          text: message,
+          icon: "error",
+          confirmButtonText: "Close",
+        });
+        return;
+      }
+
+      await Swal.fire({
+        title: "Booking confirmed",
+        text:
+          payload?.message ||
+          `Successfully booked ${seatsToBook} seat${
+            seatsToBook === 1 ? "" : "s"
+          }.`,
+        icon: "success",
+        confirmButtonText: "Great",
+      });
+      router.refresh();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unexpected error";
+      await Swal.fire({
+        title: "Booking failed",
+        text: message,
+        icon: "error",
+        confirmButtonText: "Close",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <section className="rounded-3xl border border-[#ebe7fb] bg-white p-8 shadow-[0_25px_70px_rgba(106,78,198,0.08)]">
       <div className="flex items-center justify-between">
@@ -49,7 +155,7 @@ export default function EventSeatSelector({
           Select Number of Seats
         </h2>
         <span className="text-sm font-medium text-[#8a7ead]">
-          Max {normalized} total seats
+          {availableSeats} seat{availableSeats === 1 ? "" : "s"} available
         </span>
       </div>
 
@@ -83,9 +189,10 @@ export default function EventSeatSelector({
 
       <button
         type="button"
-        disabled={bookingDisabled}
+        disabled={bookingDisabled || disabled || submitting}
+        onClick={handleBooking}
         className={`mt-6 w-full rounded-2xl py-4 text-lg font-semibold text-white shadow-lg transition ${
-          bookingDisabled
+          bookingDisabled || disabled || submitting
             ? "bg-[#a8a5bf] cursor-not-allowed"
             : "bg-[#5b61ff] hover:bg-[#4a50e6]"
         }`}

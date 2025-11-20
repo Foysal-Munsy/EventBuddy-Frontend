@@ -75,7 +75,9 @@ export default async function EventDetailPage({ params }: PageProps) {
             />
 
             <EventSeatSelector
+              eventId={event.id}
               maxSeats={event.totalSeats}
+              bookedSeats={event.bookedSeats}
               bookingDisabled={bookingClosed}
             />
 
