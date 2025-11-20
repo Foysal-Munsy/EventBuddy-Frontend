@@ -3,6 +3,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --primary: #250A63;
+  --primary-foreground: #ffffff;
+  --btn-gradient: linear-gradient(180deg, #7B8BFF 0%, #4157FE 100%);
 }
 
 @theme inline {
