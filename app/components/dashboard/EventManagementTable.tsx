@@ -14,10 +14,12 @@ export interface EventRecord {
 
 interface EventManagementTableProps {
   apiUrl?: string;
+  refreshKey?: number;
 }
 
 export default function EventManagementTable({
   apiUrl = "http://localhost:8000/events",
+  refreshKey = 0,
 }: EventManagementTableProps) {
   const [events, setEvents] = useState<EventRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,13 +84,16 @@ export default function EventManagementTable({
     loadEvents();
 
     const handleAuthChange = () => loadEvents();
+    const handleExternalUpdate = () => loadEvents();
     window.addEventListener("authChange", handleAuthChange);
+    window.addEventListener("eventsUpdated", handleExternalUpdate);
 
     return () => {
       cancelled = true;
       window.removeEventListener("authChange", handleAuthChange);
+      window.removeEventListener("eventsUpdated", handleExternalUpdate);
     };
-  }, [apiUrl]);
+  }, [apiUrl, refreshKey]);
 
   const tableBody = useMemo(() => {
     if (loading) {

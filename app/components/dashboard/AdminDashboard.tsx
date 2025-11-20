@@ -1,8 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import EventManagementTable from "./EventManagementTable";
+import CreateEventModal from "./CreateEventModal";
 
 export default function AdminDashboard() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleCloseModal = () => setIsModalOpen(false);
+  const handleEventCreated = () => {
+    setIsModalOpen(false);
+    setRefreshKey((prev) => prev + 1);
+  };
+
   return (
     <main className="min-h-screen bg-[#f4f3ff] py-12 px-4 sm:px-8">
       <section className="max-w-6xl mx-auto space-y-10">
@@ -31,13 +42,20 @@ export default function AdminDashboard() {
               style={{
                 backgroundImage: "linear-gradient(135deg, #5b61ff, #376bff)",
               }}
+              onClick={() => setIsModalOpen(true)}
             >
               Create Event
             </button>
           </div>
-          <EventManagementTable />
+          <EventManagementTable refreshKey={refreshKey} />
         </div>
       </section>
+
+      <CreateEventModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onCreated={handleEventCreated}
+      />
     </main>
   );
 }
